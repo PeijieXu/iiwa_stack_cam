@@ -55,6 +55,7 @@ import org.ros.node.service.ServiceResponseBuilder;
 
 import com.kuka.roboticsAPI.geometricModel.SceneGraphObject;
 import com.kuka.roboticsAPI.geometricModel.Workpiece;
+import com.kuka.roboticsAPI.geometricModel.math.Point;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.PositionControlMode;
 
 import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
@@ -597,9 +598,16 @@ public class ROSSmartServo extends ROSBaseApplication {
   }
 
   protected void movePointToPointCartesian(PoseStamped commandPosition, RedundancyInformation redundancy) {
+
+    Point goalPose = commandPosition.getPose().getPosition();
+    Logger.info("XPJ: get cartesian Pose: " + goalPose.getX() + " " + goalPose.getY() + " " + goalPose.getZ());
+    
     activateMotionMode(CommandType.POINT_TO_POINT_CARTESIAN_POSE);
     commandPosition = subscriber.transformPose(commandPosition, robotBaseFrameID);
-
+    goalPose = commandPosition.getPose().getPosition();
+    Logger.info("XPJ: after handling Pose: " + goalPose.getX() + " " + goalPose.getY() + " " + goalPose.getZ());
+    
+    
     if (commandPosition != null) {
       motions.pointToPointCartesianMotion(controlModeHandler.getControlMode(), commandPosition, redundancy);
     }

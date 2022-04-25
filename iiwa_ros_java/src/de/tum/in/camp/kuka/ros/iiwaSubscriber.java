@@ -1,8 +1,8 @@
 /**
  * Copyright (C) 2016 Salvatore Virga - salvo.virga@tum.de, Marco Esposito - marco.esposito@tum.de
- * Technische Universität München
+ * Technische Universitï¿½t Mï¿½nchen
  * Chair for Computer Aided Medical Procedures and Augmented Reality
- * Fakultät für Informatik / I16, Boltzmannstraße 3, 85748 Garching bei München, Germany
+ * Fakultï¿½t fï¿½r Informatik / I16, Boltzmannstraï¿½e 3, 85748 Garching bei Mï¿½nchen, Germany
  * http://campar.in.tum.de
  * All rights reserved.
  * 
@@ -367,7 +367,9 @@ public class iiwaSubscriber extends AbstractNodeMain {
 
       Matrix4d mat = new Matrix4d(q, t, 1);
 
-      Transform transform = tfListener.getTree().lookupTransformBetween(pose.getHeader().getFrameId(), targetFrame, time);
+      Transform transform = tfListener.getTree().lookupTransformBetween(
+          pose.getHeader().getFrameId(),
+          targetFrame, time);
 
       if (transform == null) { return null; }
       transform.invert();
@@ -375,7 +377,9 @@ public class iiwaSubscriber extends AbstractNodeMain {
       Matrix4d transformed = transform.asMatrix();
       transformed.mul(mat);
 
-      Matrix3d base = new Matrix3d(transformed.getM00(), transformed.getM01(), transformed.getM02(), transformed.getM10(), transformed.getM11(), transformed.getM12(),
+      Matrix3d base = new Matrix3d(
+          transformed.getM00(), transformed.getM01(), transformed.getM02(),
+          transformed.getM10(), transformed.getM11(), transformed.getM12(),
           transformed.getM20(), transformed.getM21(), transformed.getM22());
       q.set(base);
 
