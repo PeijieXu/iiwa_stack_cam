@@ -444,35 +444,42 @@ public class ROSSmartServo extends ROSBaseApplication {
         CommandType copy = subscriber.currentCommandType;
         subscriber.currentCommandType = null;
 
-        switch (copy) {
-          case SMART_SERVO_CARTESIAN_POSE: {
-            moveToCartesianPose(subscriber.getCartesianPose(), null);
-            break;
-          }
-          case SMART_SERVO_CARTESIAN_POSE_LIN: {
-            moveToCartesianPoseLin(subscriber.getCartesianPoseLin(), null);
-            break;
-          }
-          case SMART_SERVO_CARTESIAN_VELOCITY: {
-            moveByCartesianVelocity(subscriber.getCartesianVelocity());
-            break;
-          }
-          case SMART_SERVO_JOINT_POSITION: {
-            moveToJointPosition(subscriber.getJointPosition());
-            break;
-          }
-          case SMART_SERVO_JOINT_POSITION_VELOCITY: {
-            moveByJointPositionVelocity(subscriber.getJointPositionVelocity());
-            break;
-          }
-          case SMART_SERVO_JOINT_VELOCITY: {
-            moveByJointVelocity(subscriber.getJointVelocity());
-            break;
-          }
-          default: {
-            throw new UnsupportedControlModeException("commandType: " + copy);
+        if (subscriber.commandJointSpline){
+          subscriber.commandJointSpline = flase;
+          moveAlongJointSpline(subscriber.getJointSpline());
+          
+        } else {
+          switch (copy) {
+            case SMART_SERVO_CARTESIAN_POSE: {
+              moveToCartesianPose(subscriber.getCartesianPose(), null);
+              break;
+            }
+            case SMART_SERVO_CARTESIAN_POSE_LIN: {
+              moveToCartesianPoseLin(subscriber.getCartesianPoseLin(), null);
+              break;
+            }
+            case SMART_SERVO_CARTESIAN_VELOCITY: {
+              moveByCartesianVelocity(subscriber.getCartesianVelocity());
+              break;
+            }
+            case SMART_SERVO_JOINT_POSITION: {
+              moveToJointPosition(subscriber.getJointPosition());
+              break;
+            }
+            case SMART_SERVO_JOINT_POSITION_VELOCITY: {
+              moveByJointPositionVelocity(subscriber.getJointPositionVelocity());
+              break;
+            }
+            case SMART_SERVO_JOINT_VELOCITY: {
+              moveByJointVelocity(subscriber.getJointVelocity());
+              break;
+            }
+            default: {
+              throw new UnsupportedControlModeException("commandType: " + copy);
+            }
           }
         }
+        
       }
     }
     catch (Exception e) {
@@ -660,4 +667,11 @@ public class ROSSmartServo extends ROSBaseApplication {
     activateMotionMode(CommandType.SMART_SERVO_CARTESIAN_VELOCITY);
     motions.cartesianVelocityMotion(motion, commandVelocity, endpointFrame);
   }
+
+  protected void moveAlongJointSpline(Spline spline){
+
+
+    // TODO: XPJ
+  }
+
 }

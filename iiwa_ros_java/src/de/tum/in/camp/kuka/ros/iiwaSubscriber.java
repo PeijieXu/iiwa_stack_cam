@@ -27,6 +27,7 @@
 
 package de.tum.in.camp.kuka.ros;
 
+import iiwa_msgs.Spline;
 import iiwa_msgs.CartesianPose;
 import iiwa_msgs.RedundancyInformation;
 import geometry_msgs.Point;
@@ -111,6 +112,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
   private Subscriber<iiwa_msgs.JointPosition> jointPositionSubscriber;
   private Subscriber<iiwa_msgs.JointPositionVelocity> jointPositionVelocitySubscriber;
   private Subscriber<iiwa_msgs.JointVelocity> jointVelocitySubscriber;
+  private Subscriber<iiwa_msgs.Spline> jointSplineSubscriber;
 
   private TransformListener tfListener;
 
@@ -124,14 +126,19 @@ public class iiwaSubscriber extends AbstractNodeMain {
   private iiwa_msgs.JointPosition jp;
   private iiwa_msgs.JointPositionVelocity jpv;
   private iiwa_msgs.JointVelocity jv;
+  private iiwa_msgs.Spline splineMsg;
 
   private Boolean new_jp = new Boolean("false");
   private Boolean new_cp = new Boolean("false");
   private Boolean new_cp_lin = new Boolean("false");
   private Boolean new_jpv = new Boolean("false");
+  private Boolean new_jointSpline = new Boolean("false");
 
   // Current control strategy
   public CommandType currentCommandType = null;
+
+  // joint spline received
+  public Boolean commandJointSpline = false;
 
   // Current action type
   public CommandType currentActionType = null;
@@ -179,6 +186,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jp = helper.buildMessage(iiwa_msgs.JointPosition._TYPE);
     jpv = helper.buildMessage(iiwa_msgs.JointPositionVelocity._TYPE);
     jv = helper.buildMessage(iiwa_msgs.JointVelocity._TYPE);
+    splineMsg = helper.buildMessage(iiwa_msgs.Spline._TYPE);
   }
 
   /**
@@ -191,6 +199,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jp.getHeader().setSeq(0);
     jpv.getHeader().setSeq(0);
     jv.getHeader().setSeq(0);
+    splineMsg.getHeader().setSeq(0);
   }
 
   /**
@@ -318,6 +327,16 @@ public class iiwaSubscriber extends AbstractNodeMain {
       else {
         return null;
       }
+    }
+  }
+
+  public iiwa_msgs.Spline getJointSpline() {
+    synchronized (new_jointSpline) {
+      if(new_jointSpline){
+        new_jointSpline = false;
+        return splineMsg;
+      }
+      return null;
     }
   }
 
@@ -471,6 +490,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jointPositionSubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointPosition", iiwa_msgs.JointPosition._TYPE, hint);
     jointPositionVelocitySubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointPositionVelocity", iiwa_msgs.JointPositionVelocity._TYPE, hint);
     jointVelocitySubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointVelocity", iiwa_msgs.JointVelocity._TYPE, hint);
+    jointSplineSubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointSpline", iiwa_msgs.Spline._TYPE, hint);
     tfListener = new TransformListener(connectedNode);
 
     // Subscribers' callbacks
@@ -572,6 +592,19 @@ public class iiwaSubscriber extends AbstractNodeMain {
       }
     });
 
+    jointSplineSubscriber.addMessageListener(new MessageListener<iiwa_msgs.Spline>() {
+      @Override
+      public void onNewMessage(iiwa_msgs.Spline spline) {
+ 
+        splineMsg = spline;
+
+        synchronized (new_jointSpline) {
+          commandJointSpline = true;
+          new_jointSpline = true;
+        }
+      }
+    });
+    
     // Creating SmartServo service if a callback has been defined.
     if (configureControlModeCallback != null) {
       configureControlModeServer = node.newServiceServer(iiwaName + "/configuration/ConfigureControlMode", "iiwa_msgs/ConfigureControlMode", configureControlModeCallback);

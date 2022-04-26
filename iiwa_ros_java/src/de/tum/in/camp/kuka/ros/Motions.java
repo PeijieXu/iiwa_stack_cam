@@ -1,8 +1,8 @@
 /**
  * Copyright (C) 2016 Salvatore Virga - salvo.virga@tum.de, Marco Esposito - marco.esposito@tum.de
- * Technische Universität München
+ * Technische Universitï¿½t Mï¿½nchen
  * Chair for Computer Aided Medical Procedures and Augmented Reality
- * Fakultät für Informatik / I16, Boltzmannstraße 3, 85748 Garching bei München, Germany
+ * Fakultï¿½t fï¿½r Informatik / I16, Boltzmannstraï¿½e 3, 85748 Garching bei Mï¿½nchen, Germany
  * http://campar.in.tum.de
  * All rights reserved.
  * 
@@ -47,6 +47,8 @@ import com.kuka.roboticsAPI.motionModel.LIN;
 import com.kuka.roboticsAPI.motionModel.PTP;
 import com.kuka.roboticsAPI.motionModel.Spline;
 import com.kuka.roboticsAPI.motionModel.SplineMotionCP;
+import com.kuka.roboticsAPI.motionModel.SplineJP;
+import com.kuka.roboticsAPI.motionModel.SplineMotionJP;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.IMotionControlMode;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
@@ -153,6 +155,49 @@ public class Motions {
       SpeedLimits.applySpeedLimits(linMotion);
       endPointFrame.moveAsync(linMotion, new PTPMotionFinishedEventListener(publisher, actionServer));
     }
+  }
+
+  /**
+   * Executes a motion along a spline, in joint space
+   * 
+   * @param motion
+   * @param splineMsg
+   * @param subscriber
+   * @return
+   */
+  public boolean pointToPointJointSplineMotion(IMotionControlMode motion, iiwa_msgs.Spline splineMsg, iiwaSubscriber subscriber) {
+    if (splineMsg == null) { return false; }
+
+    boolean success = true;
+    List<SplineMotionJP<?>> splineSegments = new ArrayList<SplineMotionJP<?>>();
+    int i = 0;
+
+    for (SplineSegment segmentMsg : splineMsg.getSegments()) {
+      SplineMotionJP<?> segment = null;
+      
+      // TODO: XPJ
+      segmentMsg.getPoint().getPoseStamped().getPose().getPosition();
+
+      if (segment != null) {
+        splineSegments.add(segment);
+      }
+      else {
+        Logger.warn("Invalid spline segment: " + i);
+        success = false;
+      }
+
+      i++;
+    }
+
+    if (success) {
+      Logger.debug("Executing spline with " + splineSegments.size() + " segments");
+      SplineJP spline = new SplineJP(splineSegments.toArray(new SplineMotionJP<?>[splineSegments.size()]));
+      SpeedLimits.applySpeedLimits(spline);
+      endPointFrame.moveAsync(spline, new PTPMotionFinishedEventListener(publisher, actionServer));
+    }
+
+    return success;
+
   }
 
   /**
