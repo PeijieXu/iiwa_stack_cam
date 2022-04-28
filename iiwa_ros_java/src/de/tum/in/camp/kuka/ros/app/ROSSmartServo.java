@@ -445,7 +445,7 @@ public class ROSSmartServo extends ROSBaseApplication {
         subscriber.currentCommandType = null;
 
         if (subscriber.commandJointSpline){
-          subscriber.commandJointSpline = flase;
+          subscriber.commandJointSpline = false;
           moveAlongJointSpline(subscriber.getJointSpline());
           
         } else {
@@ -670,8 +670,11 @@ public class ROSSmartServo extends ROSBaseApplication {
 
   protected void moveAlongJointSpline(Spline spline){
 
-
     // TODO: XPJ
+
+    motions
+        .pointToPointJointSplineMotion(controlModeHandler.getControlMode(), spline, subscriber);
+
   }
 
 }

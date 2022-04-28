@@ -199,7 +199,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jp.getHeader().setSeq(0);
     jpv.getHeader().setSeq(0);
     jv.getHeader().setSeq(0);
-    splineMsg.getHeader().setSeq(0);
+    // splineMsg.getHeader().setSeq(0);
   }
 
   /**
