@@ -50,6 +50,8 @@ import com.kuka.roboticsAPI.motionModel.SplineMotionCP;
 import com.kuka.roboticsAPI.motionModel.SplineJP;
 import com.kuka.roboticsAPI.motionModel.SplineMotionJP;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.IMotionControlMode;
+import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
+import com.kuka.roboticsAPI.geometricModel.CartDOF;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.lin;
@@ -169,32 +171,36 @@ public class Motions {
     if (splineMsg == null) { return false; }
 
     boolean success = true;
-    List<SplineMotionJP<?>> splineSegments = new ArrayList<SplineMotionJP<?>>();
-    int i = 0;
 
-    for (SplineSegment segmentMsg : splineMsg.getSegments()) {
-      SplineMotionJP<?> segment = null;
-      
-      // TODO: XPJ
-      segmentMsg.getPoint().getPoseStamped().getPose().getPosition();
+    PTP[] path = new PTP[splineMsg.getSegments().size()];
+    int idx = 0;
+    for (SplineSegment segment : splineMsg.getSegments()) {
+      JointPosition jointPosition = new JointPosition(
+        segment.getPoint().getPoseStamped().getPose().getPosition().getX(),
+        segment.getPoint().getPoseStamped().getPose().getPosition().getZ(),
+        segment.getPoint().getPoseStamped().getPose().getPosition().getX(),
+        segment.getPoint().getPoseStamped().getPose().getOrientation().getW(),
+        segment.getPoint().getPoseStamped().getPose().getOrientation().getX(),
+        segment.getPoint().getPoseStamped().getPose().getOrientation().getY(),
+        segment.getPoint().getPoseStamped().getPose().getOrientation().getZ()
+      );
 
-      if (segment != null) {
-        splineSegments.add(segment);
-      }
-      else {
-        Logger.warn("Invalid spline segment: " + i);
-        success = false;
-      }
-
-      i++;
+      path[idx++] = new PTP(jointPosition);
     }
 
-    if (success) {
-      Logger.debug("Executing spline with " + splineSegments.size() + " segments");
-      SplineJP spline = new SplineJP(splineSegments.toArray(new SplineMotionJP<?>[splineSegments.size()]));
-      SpeedLimits.applySpeedLimits(spline);
-      endPointFrame.moveAsync(spline, new PTPMotionFinishedEventListener(publisher, actionServer));
+    SplineJP splineJP = new SplineJP(path);
+    
+    try{
+      CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
+      impedanceMode.parametrize(CartDOF.X).setStiffness(1800);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(1800);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(1200);
+      endPointFrame.move(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
+    }catch(Exception e){
+      System.out.println(e);
     }
+
+    
 
     return success;
 

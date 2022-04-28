@@ -606,14 +606,8 @@ public class ROSSmartServo extends ROSBaseApplication {
 
   protected void movePointToPointCartesian(PoseStamped commandPosition, RedundancyInformation redundancy) {
 
-    Point goalPose = commandPosition.getPose().getPosition();
-    Logger.info("XPJ: get cartesian Pose: " + goalPose.getX() + " " + goalPose.getY() + " " + goalPose.getZ());
-    
     activateMotionMode(CommandType.POINT_TO_POINT_CARTESIAN_POSE);
     commandPosition = subscriber.transformPose(commandPosition, robotBaseFrameID);
-    goalPose = commandPosition.getPose().getPosition();
-    Logger.info("XPJ: after handling Pose: " + goalPose.getX() + " " + goalPose.getY() + " " + goalPose.getZ());
-    
     
     if (commandPosition != null) {
       motions.pointToPointCartesianMotion(controlModeHandler.getControlMode(), commandPosition, redundancy);
