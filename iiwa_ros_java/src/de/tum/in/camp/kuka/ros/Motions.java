@@ -189,12 +189,15 @@ public class Motions {
     }
 
     SplineJP splineJP = new SplineJP(path);
+    Logger.info("get Spline with size: "+idx);
     
     try{
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
       impedanceMode.parametrize(CartDOF.X).setStiffness(1800);
       impedanceMode.parametrize(CartDOF.Y).setStiffness(1800);
       impedanceMode.parametrize(CartDOF.Z).setStiffness(1200);
+      Logger.info("execute Spline");
+
       endPointFrame.move(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
     }catch(Exception e){
       System.out.println(e);
