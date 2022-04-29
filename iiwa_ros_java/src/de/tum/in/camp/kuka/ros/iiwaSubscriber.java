@@ -595,14 +595,14 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jointSplineSubscriber.addMessageListener(new MessageListener<iiwa_msgs.Spline>() {
       @Override
       public void onNewMessage(iiwa_msgs.Spline spline) {
-        Logger.info("iiwaSubscriver received a new Joint Spline Msg");
  
         splineMsg = spline;
 
         synchronized (new_jointSpline) {
           commandJointSpline = true;
           new_jointSpline = true;
-        }
+          Logger.info("iiwaSubscriver Listener received a new Joint Spline Msg");
+      }
       }
     });
     

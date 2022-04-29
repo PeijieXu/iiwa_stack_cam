@@ -446,6 +446,7 @@ public class ROSSmartServo extends ROSBaseApplication {
 
         if (subscriber.commandJointSpline){
           subscriber.commandJointSpline = false;
+          Logger.info("ROSSmartServo find a new commandJointSpline");
           moveAlongJointSpline(subscriber.getJointSpline());
           
         } else {
