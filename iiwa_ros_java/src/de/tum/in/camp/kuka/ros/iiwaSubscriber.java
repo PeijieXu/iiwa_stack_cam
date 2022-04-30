@@ -600,9 +600,11 @@ public class iiwaSubscriber extends AbstractNodeMain {
 
         synchronized (new_jointSpline) {
           commandJointSpline = true;
+          currentCommandType = CommandType.SMART_SERVO_JOINT_POSITION;
           new_jointSpline = true;
           Logger.info("iiwaSubscriver Listener received a new Joint Spline Msg");
-      }
+          Logger.info("Spline size "+spline.getSegments().size());
+        }
       }
     });
     
