@@ -177,8 +177,8 @@ public class Motions {
     for (SplineSegment segment : splineMsg.getSegments()) {
       JointPosition jointPosition = new JointPosition(
         segment.getPoint().getPoseStamped().getPose().getPosition().getX(),
+        segment.getPoint().getPoseStamped().getPose().getPosition().getY(),
         segment.getPoint().getPoseStamped().getPose().getPosition().getZ(),
-        segment.getPoint().getPoseStamped().getPose().getPosition().getX(),
         segment.getPoint().getPoseStamped().getPose().getOrientation().getW(),
         segment.getPoint().getPoseStamped().getPose().getOrientation().getX(),
         segment.getPoint().getPoseStamped().getPose().getOrientation().getY(),
