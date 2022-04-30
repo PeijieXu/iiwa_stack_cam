@@ -189,7 +189,7 @@ public class Motions {
     }
 
     SplineJP splineJP = new SplineJP(path);
-    Logger.info("get Spline with size: "+idx);
+    Logger.info("get Joint Spline with size: "+idx);
     
     try{
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
