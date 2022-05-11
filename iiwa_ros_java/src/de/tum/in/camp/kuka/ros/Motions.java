@@ -193,9 +193,9 @@ public class Motions {
     
     try{
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
-      impedanceMode.parametrize(CartDOF.X).setStiffness(1800);
-      impedanceMode.parametrize(CartDOF.Y).setStiffness(1800);
-      impedanceMode.parametrize(CartDOF.Z).setStiffness(1200);
+      impedanceMode.parametrize(CartDOF.X).setStiffness(5000);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(5000);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(5000);
       Logger.info("execute Spline");
 
       endPointFrame.move(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
