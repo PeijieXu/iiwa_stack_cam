@@ -77,3 +77,8 @@ Status API Training Shop Blog About
 /config
 *.kdev_include_paths
 *.orig
+
+
+# add for ros java message generation, by peijie
+# https://github.com/IFL-CAMP/iiwa_stack/pull/255/files
+rosjava_message
