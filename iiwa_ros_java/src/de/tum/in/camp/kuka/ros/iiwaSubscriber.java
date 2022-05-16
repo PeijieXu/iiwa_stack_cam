@@ -68,6 +68,11 @@ import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
 public class iiwaSubscriber extends AbstractNodeMain {
   private ConnectedNode node = null;
 
+  // Service for get Frames from teaching pendant
+  @SuppressWarnings("unused")
+  private ServiceServer<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse> getFramesServer = null;
+  private ServiceResponseBuilder<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse> getFramesCallback = null;
+
   // Service for reconfiguring control mode
   @SuppressWarnings("unused")
   private ServiceServer<iiwa_msgs.ConfigureControlModeRequest, iiwa_msgs.ConfigureControlModeResponse> configureControlModeServer = null;
@@ -200,6 +205,14 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jpv.getHeader().setSeq(0);
     jv.getHeader().setSeq(0);
     // splineMsg.getHeader().setSeq(0);
+  }
+
+  /**
+   * CAM's get frames from robot
+   * @param callback
+   */
+  public void setGetFramesCallback(ServiceResponseBuilder<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse> callback){
+    getFramesCallback = callback;
   }
 
   /**
@@ -606,6 +619,12 @@ public class iiwaSubscriber extends AbstractNodeMain {
       }
     });
     
+    // Creating getFrames service if a callback has been defined.
+    if (getFramesCallback != null) {
+      getFramesServer = node.newServiceServer(iiwaName + "/configuration/GetFrames", "iiwa_msgs/GetFrames", getFramesCallback);
+      Logger.info("sub625");
+    }
+
     // Creating SmartServo service if a callback has been defined.
     if (configureControlModeCallback != null) {
       configureControlModeServer = node.newServiceServer(iiwaName + "/configuration/ConfigureControlMode", "iiwa_msgs/ConfigureControlMode", configureControlModeCallback);

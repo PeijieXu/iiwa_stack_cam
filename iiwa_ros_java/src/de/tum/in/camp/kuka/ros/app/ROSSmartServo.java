@@ -28,6 +28,8 @@
 package de.tum.in.camp.kuka.ros.app;
 
 import geometry_msgs.PoseStamped;
+import geometry_msgs.Quaternion;
+import geometry_msgs.Transform;
 import iiwa_msgs.ConfigureControlModeRequest;
 import iiwa_msgs.ConfigureControlModeResponse;
 import iiwa_msgs.JointPosition;
@@ -44,6 +46,9 @@ import iiwa_msgs.SetEndpointFrameResponse;
 import iiwa_msgs.Spline;
 import iiwa_msgs.TimeToDestinationRequest;
 import iiwa_msgs.TimeToDestinationResponse;
+import iiwa_msgs.GetFramesRequest;
+import iiwa_msgs.GetFramesResponse;
+import iiwa_msgs.JointQuantity;
 
 import java.net.URISyntaxException;
 import java.util.List;
@@ -53,12 +58,16 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseBuilder;
 
+import com.kuka.roboticsAPI.geometricModel.ObjectFrame;
 import com.kuka.roboticsAPI.geometricModel.SceneGraphObject;
 import com.kuka.roboticsAPI.geometricModel.Workpiece;
 import com.kuka.roboticsAPI.geometricModel.math.Point;
+import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.PositionControlMode;
+import com.kuka.roboticsAPI.deviceModel.LBR;
 
 import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
+import de.tum.in.camp.kuka.ros.Conversions;
 import de.tum.in.camp.kuka.ros.Logger;
 import de.tum.in.camp.kuka.ros.Motions;
 import de.tum.in.camp.kuka.ros.SpeedLimits;
@@ -99,6 +108,52 @@ public class ROSSmartServo extends ROSBaseApplication {
 
     // Configure the callback for the SmartServo service inside the subscriber
     // class.
+
+    subscriber
+        .setGetFramesCallback(new ServiceResponseBuilder<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse>() {
+          @Override
+          public void build(GetFramesRequest req, GetFramesResponse res) throws ServiceException {
+            controlModeLock.lock();
+            try {
+              List<ObjectFrame> frameList = robot.getAllFrames();Logger.info("ss118");
+              int listSize = frameList.size();
+              res.setFrameSize(listSize);
+
+              for (int i = 0; i < listSize; i++) {
+                ObjectFrame frame = frameList.get(i);
+
+                com.kuka.roboticsAPI.deviceModel.JointPosition jointPos = robot
+                    .getInverseKinematicFromFrameAndRedundancy(
+                        frame.copyWithRedundancy()); // TODO: check if copy is necessary
+
+                JointQuantity q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
+                Conversions.vectorToJointQuantity(jointPos.get(), q);
+                res.getJointPosition().add(q);
+
+                res.getFrameName().add(frame.getName());
+                res.getParentName().add(frame.getParent().getName());
+
+                Transformation transWorld = frame.transformationFromWorld();
+                geometry_msgs.Pose pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
+                Conversions.kukaTransformationToRosPose(transWorld, pose);
+                res.getCartWorldPosition().add(pose);
+              }
+              res.setSuccess(true);
+              Logger.info("ss142");
+            } catch (Exception e) {
+              res.setSuccess(false);
+              if (e.getMessage() != null) {
+                res.setError(e.getClass().getName() + ": " + e.getMessage());
+              } else {
+                res.setError("unexpected error");
+              }
+              return;
+            } finally {
+              controlModeLock.unlock();
+            }
+          }
+        });
+
     subscriber
         .setConfigureControlModeCallback(new ServiceResponseBuilder<iiwa_msgs.ConfigureControlModeRequest, iiwa_msgs.ConfigureControlModeResponse>() {
           @Override
