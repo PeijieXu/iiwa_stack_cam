@@ -115,20 +115,22 @@ public class ROSSmartServo extends ROSBaseApplication {
           public void build(GetFramesRequest req, GetFramesResponse res) throws ServiceException {
             controlModeLock.lock();
             try {
-              List<ObjectFrame> frameList = robot.getAllFrames();Logger.info("ss118");
-              int listSize = frameList.size();
-              res.setFrameSize(listSize);
+              int frameCnt = 0;
+              int listSize = 20;
 
               for (int i = 0; i < listSize; i++) {
-                ObjectFrame frame = frameList.get(i);
+                ObjectFrame frame =getApplicationData().tryGetFrame("/P"+i);
+                if(frame==null){
+                  continue;
+                }  
+                frameCnt++;
+                // com.kuka.roboticsAPI.deviceModel.JointPosition jointPos = robot
+                //     .getInverseKinematicFromFrameAndRedundancy(
+                //         frame.copyWithRedundancy()); // TODO: check if copy is necessary
 
-                com.kuka.roboticsAPI.deviceModel.JointPosition jointPos = robot
-                    .getInverseKinematicFromFrameAndRedundancy(
-                        frame.copyWithRedundancy()); // TODO: check if copy is necessary
-
-                JointQuantity q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
-                Conversions.vectorToJointQuantity(jointPos.get(), q);
-                res.getJointPosition().add(q);
+                // JointQuantity q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
+                // Conversions.vectorToJointQuantity(jointPos.get(), q);
+                // res.getJointPosition().add(q);
 
                 res.getFrameName().add(frame.getName());
                 res.getParentName().add(frame.getParent().getName());
@@ -138,8 +140,9 @@ public class ROSSmartServo extends ROSBaseApplication {
                 Conversions.kukaTransformationToRosPose(transWorld, pose);
                 res.getCartWorldPosition().add(pose);
               }
+              res.setFrameSize(frameCnt);
               res.setSuccess(true);
-              Logger.info("ss142");
+
             } catch (Exception e) {
               res.setSuccess(false);
               if (e.getMessage() != null) {
