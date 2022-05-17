@@ -89,10 +89,10 @@ public class ROSSmartServo extends ROSBaseApplication {
   private String robotBaseFrameID = "";
   private static final String robotBaseFrameIDSuffix = "_link_0";
 
-  private int getChildrenFramesHelper(ObjectFrame frame, GetFramesResponse res, int frameCnt) throws Exception{
-    
+  private int getChildrenFrames(ObjectFrame frame, GetFramesResponse res) throws Exception{
+    int frameCnt = 0;
 
-      List<ObjectFrame> childList = frame.getChildren();
+      List<ObjectFrame> childList = frame.getChildrenSnapshot(); 
 
       for (ObjectFrame childFrame : childList) {
         frameCnt++;
@@ -112,7 +112,7 @@ public class ROSSmartServo extends ROSBaseApplication {
         Conversions.kukaTransformationToRosPose(c_transWorld, c_pose);
         res.getCartWorldPosition().add(c_pose);
 
-        frameCnt = getChildrenFramesHelper(childFrame, res, frameCnt);
+        frameCnt += getChildrenFrames(childFrame, res);
       }
 
     
@@ -170,7 +170,7 @@ public class ROSSmartServo extends ROSBaseApplication {
                 Conversions.kukaTransformationToRosPose(transWorld, pose);
                 res.getCartWorldPosition().add(pose);
 
-                frameCnt = getChildrenFramesHelper(frame, res, frameCnt);
+                frameCnt = getChildrenFrames(frame, res, frameCnt);
               }
               res.setFrameSize(frameCnt);
               res.setSuccess(true);
