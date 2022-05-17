@@ -124,13 +124,13 @@ public class ROSSmartServo extends ROSBaseApplication {
                   continue;
                 }  
                 frameCnt++;
-                // com.kuka.roboticsAPI.deviceModel.JointPosition jointPos = robot
-                //     .getInverseKinematicFromFrameAndRedundancy(
-                //         frame.copyWithRedundancy()); // TODO: check if copy is necessary
 
-                // JointQuantity q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
-                // Conversions.vectorToJointQuantity(jointPos.get(), q);
-                // res.getJointPosition().add(q);
+                com.kuka.roboticsAPI.deviceModel.JointPosition jointPos = robot
+                    .getInverseKinematicFromFrameAndRedundancy(
+                        frame); 
+                JointQuantity q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
+                Conversions.vectorToJointQuantity(jointPos.get(), q);
+                res.getJointPosition().add(q);
 
                 res.getFrameName().add(frame.getName());
                 res.getParentName().add(frame.getParent().getName());
@@ -139,6 +139,26 @@ public class ROSSmartServo extends ROSBaseApplication {
                 geometry_msgs.Pose pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
                 Conversions.kukaTransformationToRosPose(transWorld, pose);
                 res.getCartWorldPosition().add(pose);
+
+                List<ObjectFrame> childList= frame.getChildrenSnapshot();
+                for (ObjectFrame childFrame : childList) {
+                  frameCnt++;
+
+                  com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
+                      .getInverseKinematicFromFrameAndRedundancy(
+                          childFrame); 
+                  JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
+                  Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
+                  res.getJointPosition().add(c_q);
+
+                  res.getFrameName().add(childFrame.getName());
+                  res.getParentName().add(frame.getName());
+
+                  Transformation c_transWorld = childFrame.transformationFromWorld();
+                  geometry_msgs.Pose c_pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
+                  Conversions.kukaTransformationToRosPose(c_transWorld, c_pose);
+                  res.getCartWorldPosition().add(c_pose);
+                }
               }
               res.setFrameSize(frameCnt);
               res.setSuccess(true);
