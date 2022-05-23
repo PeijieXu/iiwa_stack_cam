@@ -89,33 +89,32 @@ public class ROSSmartServo extends ROSBaseApplication {
   private String robotBaseFrameID = "";
   private static final String robotBaseFrameIDSuffix = "_link_0";
 
-  private int getChildrenFrames(ObjectFrame frame, GetFramesResponse res) throws Exception{
+  private int getChildrenFrames(ObjectFrame frame, GetFramesResponse res) throws Exception {
     int frameCnt = 0;
 
-      List<ObjectFrame> childList = frame.getChildrenSnapshot(); 
+    List<ObjectFrame> childList = frame.getChildrenSnapshot();
 
-      for (ObjectFrame childFrame : childList) {
-        frameCnt++;
+    for (ObjectFrame childFrame : childList) {
+      frameCnt++;
 
-        // com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
-        //     .getInverseKinematicFromFrameAndRedundancy(
-        //         childFrame);
-        JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
-        // Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
-        res.getJointPosition().add(c_q);
+      // com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
+      // .getInverseKinematicFromFrameAndRedundancy(
+      // childFrame);
+      JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
+      // Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
+      res.getJointPosition().add(c_q);
 
-        res.getFrameName().add(childFrame.getName());
-        res.getParentName().add(frame.getName());
+      res.getFrameName().add(childFrame.getName());
+      res.getParentName().add(frame.getName());
 
-        Transformation c_transWorld = childFrame.transformationFromWorld();
-        geometry_msgs.Pose c_pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
-        Conversions.kukaTransformationToRosPose(c_transWorld, c_pose);
-        res.getCartWorldPosition().add(c_pose);
+      Transformation c_transWorld = childFrame.transformationFromWorld();
+      geometry_msgs.Pose c_pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
+      Conversions.kukaTransformationToRosPose(c_transWorld, c_pose);
+      res.getCartWorldPosition().add(c_pose);
 
-        frameCnt += getChildrenFrames(childFrame, res);
-      }
+      frameCnt += getChildrenFrames(childFrame, res);
+    }
 
-    
     return frameCnt;
   }
 
@@ -146,7 +145,7 @@ public class ROSSmartServo extends ROSBaseApplication {
             controlModeLock.lock();
             try {
               int frameCnt = 0;
-              int listSize = 20;
+              int listSize = 100;
 
               for (int i = 0; i < listSize; i++) {
                 ObjectFrame frame =getApplicationData().tryGetFrame("/P"+i);

@@ -1,6 +1,5 @@
-# This service allows to set a control mode at runtime.
-# The user can select control modes defined in iiwa_msgs/ControlMode and set the respective parameters accordingly to the selected mode.
-
+# This service get all the frames from the teaching pandanat
+# the frames based on the "base" frame should follow the name convention: P[non negative number less than 100], e.g., P0 P1 P32 ... P99
 
 
 ---
