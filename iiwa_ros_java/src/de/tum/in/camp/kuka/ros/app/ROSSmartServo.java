@@ -170,7 +170,7 @@ public class ROSSmartServo extends ROSBaseApplication {
                 Conversions.kukaTransformationToRosPose(transWorld, pose);
                 res.getCartWorldPosition().add(pose);
 
-                frameCnt = getChildrenFrames(frame, res, frameCnt);
+                frameCnt += getChildrenFrames(frame, res);
               }
               res.setFrameSize(frameCnt);
               res.setSuccess(true);

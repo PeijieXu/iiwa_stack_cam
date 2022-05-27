@@ -193,11 +193,13 @@ public class Motions {
     
     try{
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
-      impedanceMode.parametrize(CartDOF.X).setStiffness(4000);
-      impedanceMode.parametrize(CartDOF.Y).setStiffness(4000);
-      impedanceMode.parametrize(CartDOF.Z).setStiffness(4000);
+      impedanceMode.parametrize(CartDOF.X).setStiffness(5000);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(5000);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(5000);
 
-      endPointFrame.move(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
+
+      endPointFrame.moveAsync(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
+      Logger.info("" + endPointFrame);
       Logger.info("executed Spline");
     }catch(Exception e){
       System.out.println(e);
