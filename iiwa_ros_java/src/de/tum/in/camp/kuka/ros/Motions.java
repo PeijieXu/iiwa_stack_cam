@@ -198,9 +198,7 @@ public class Motions {
       impedanceMode.parametrize(CartDOF.Z).setStiffness(5000);
 
 
-      endPointFrame.moveAsync(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
-      Logger.info("" + endPointFrame);
-      Logger.info("executed Spline");
+      endPointFrame.move(splineJP.setJointVelocityRel(0.1).setMode(impedanceMode)); //TODO: XPJ exec mode
     }catch(Exception e){
       System.out.println(e);
     }
