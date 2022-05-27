@@ -103,6 +103,7 @@ public class ROSSmartServo extends ROSBaseApplication {
       JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
       // Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
       res.getJointPosition().add(c_q);
+      // System.out.println(childFrame.getName()+" status: "+childFrame.getRedundancyInformation()); 
 
       res.getFrameName().add(childFrame.getName());
       res.getParentName().add(frame.getName());
