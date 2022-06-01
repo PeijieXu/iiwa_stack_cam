@@ -97,16 +97,15 @@ public class ROSSmartServo extends ROSBaseApplication {
     for (ObjectFrame childFrame : childList) {
       frameCnt++;
 
-      // com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
-      // .getInverseKinematicFromFrameAndRedundancy(
-      // childFrame);
+      com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
+          .getInverseKinematicFromFrameAndRedundancy(
+              childFrame);
       JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
-      // Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
+      Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
       res.getJointPosition().add(c_q);
-      // System.out.println(childFrame.getName()+" status: "+childFrame.getRedundancyInformation()); 
 
       res.getFrameName().add(childFrame.getName());
-      res.getParentName().add(frame.getName());
+      res.getParentName().add(frame.getPath());
 
       Transformation c_transWorld = childFrame.transformationFromWorld();
       geometry_msgs.Pose c_pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
