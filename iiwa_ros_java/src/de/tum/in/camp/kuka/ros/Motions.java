@@ -188,20 +188,21 @@ public class Motions {
       path[idx++] = new PTP(jointPosition);
     }
 
-    double jpVel = Double
-        .parseDouble(splineMsg.getSegments().get(0).getPoint().getPoseStamped().getHeader().getFrameId());
+    String speedStr = splineMsg.getSegments().get(0).getPoint().getPoseStamped().getHeader().getFrameId();
+
+    double jpVel = speedStr.isEmpty() ? 0.1 : Double.parseDouble(speedStr);
 
     SplineJP splineJP = new SplineJP(path);
-    Logger.info("get Joint Spline with size: "+idx + ", at speed: "+ jpVel);
-    
-    try{
+    Logger.info("get Joint Spline with size: " + idx + ", at speed: " + jpVel);
+
+    try {
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
       impedanceMode.parametrize(CartDOF.X).setStiffness(5000);
       impedanceMode.parametrize(CartDOF.Y).setStiffness(5000);
       impedanceMode.parametrize(CartDOF.Z).setStiffness(5000);
 
 
-      endPointFrame.move(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); //TODO: XPJ exec mode
+      endPointFrame.move(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); 
     }catch(Exception e){
       System.out.println(e);
     }
