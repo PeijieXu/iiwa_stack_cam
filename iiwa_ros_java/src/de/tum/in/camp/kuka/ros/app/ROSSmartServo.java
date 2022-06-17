@@ -106,6 +106,8 @@ public class ROSSmartServo extends ROSBaseApplication {
 
       res.getFrameName().add(childFrame.getName());
       res.getParentName().add(frame.getPath());
+      String status = childFrame.getRedundancyInformation().values().iterator().next().getAllParameters().iterator().next().value().toString();
+      res.getStatus().add(status);
 
       Transformation c_transWorld = childFrame.transformationFromWorld();
       geometry_msgs.Pose c_pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
@@ -163,7 +165,9 @@ public class ROSSmartServo extends ROSBaseApplication {
 
                 res.getFrameName().add(frame.getName());
                 res.getParentName().add(frame.getParent().getName());//res.getStatus().add()
-
+                
+                String status = frame.getRedundancyInformation().values().iterator().next().getAllParameters().iterator().next().value().toString();
+                res.getStatus().add(status);
                 Transformation transWorld = frame.transformationFromWorld();
                 geometry_msgs.Pose pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
                 Conversions.kukaTransformationToRosPose(transWorld, pose);
