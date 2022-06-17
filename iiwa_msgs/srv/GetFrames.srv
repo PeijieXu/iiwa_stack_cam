@@ -12,6 +12,6 @@ string[] frame_name
 string[] parent_name
 
 # frame data 
-int32[] status
+string[] status
 JointQuantity[] joint_position
 geometry_msgs/Pose[] cart_world_position

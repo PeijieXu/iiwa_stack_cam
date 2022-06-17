@@ -149,7 +149,7 @@ public class ROSSmartServo extends ROSBaseApplication {
 
               for (int i = 0; i < listSize; i++) {
                 ObjectFrame frame =getApplicationData().tryGetFrame("/P"+i);
-                if(frame==null){
+                if (frame == null) {
                   continue;
                 }  
                 frameCnt++;
@@ -162,7 +162,7 @@ public class ROSSmartServo extends ROSBaseApplication {
                 res.getJointPosition().add(q);
 
                 res.getFrameName().add(frame.getName());
-                res.getParentName().add(frame.getParent().getName());
+                res.getParentName().add(frame.getParent().getName());//res.getStatus().add()
 
                 Transformation transWorld = frame.transformationFromWorld();
                 geometry_msgs.Pose pose = publisher.getMessageGenerator().buildMessage(geometry_msgs.Pose._TYPE);
