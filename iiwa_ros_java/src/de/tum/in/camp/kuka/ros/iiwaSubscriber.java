@@ -622,7 +622,6 @@ public class iiwaSubscriber extends AbstractNodeMain {
     // Creating getFrames service if a callback has been defined.
     if (getFramesCallback != null) {
       getFramesServer = node.newServiceServer(iiwaName + "/configuration/GetFrames", "iiwa_msgs/GetFrames", getFramesCallback);
-      Logger.info("sub625");
     }
 
     // Creating SmartServo service if a callback has been defined.

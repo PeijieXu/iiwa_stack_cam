@@ -192,14 +192,38 @@ public class Motions {
 
     double jpVel = speedStr.isEmpty() ? 0.1 : Double.parseDouble(speedStr);
 
+    if (jpVel < 0.01)
+      jpVel = 0.1;
+    else if (jpVel > 1)
+      jpVel = 1;
+
+    double stiffStrX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
+    double stiffStrY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
+    double stiffStrZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getZ();
+
+    if (stiffStrX < 0.01)
+      stiffStrX = 2000.0;
+    else if (stiffStrX > 5000)
+      stiffStrX = 5000.0;
+
+    if (stiffStrY < 0.01)
+      stiffStrY = 2000.0;
+    else if (stiffStrY > 5000)
+      stiffStrY = 5000.0;
+
+    if (stiffStrZ < 0.01)
+      stiffStrZ = 2000.0;
+    else if (stiffStrZ > 5000)
+      stiffStrZ = 5000.0;
+
     SplineJP splineJP = new SplineJP(path);
     Logger.info("get Joint Spline with size: " + idx + ", at speed: " + jpVel);
 
     try {
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
-      impedanceMode.parametrize(CartDOF.X).setStiffness(5000);
-      impedanceMode.parametrize(CartDOF.Y).setStiffness(5000);
-      impedanceMode.parametrize(CartDOF.Z).setStiffness(5000);
+      impedanceMode.parametrize(CartDOF.X).setStiffness(stiffStrX);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiffStrY);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiffStrZ);
 
 
       endPointFrame.move(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); 
