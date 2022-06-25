@@ -226,7 +226,7 @@ public class Motions {
       impedanceMode.parametrize(CartDOF.Z).setStiffness(stiffStrZ);
 
 
-      endPointFrame.move(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); 
+      endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); 
     }catch(Exception e){
       System.out.println(e);
     }
