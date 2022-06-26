@@ -68,7 +68,12 @@ import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
 public class iiwaSubscriber extends AbstractNodeMain {
   private ConnectedNode node = null;
 
-  // Service for get Frames from teaching pendant
+  // Service for emergency stop on software level
+  @SuppressWarnings("unused")
+  private ServiceServer<iiwa_msgs.EmergencyStopRequest, iiwa_msgs.EmergencyStopResponse> eStopServer = null;
+  private ServiceResponseBuilder<iiwa_msgs.EmergencyStopRequest, iiwa_msgs.EmergencyStopResponse> eStopCallback = null;
+
+  // Service for get frames from teaching pendant
   @SuppressWarnings("unused")
   private ServiceServer<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse> getFramesServer = null;
   private ServiceResponseBuilder<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse> getFramesCallback = null;
@@ -205,6 +210,14 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jpv.getHeader().setSeq(0);
     jv.getHeader().setSeq(0);
     // splineMsg.getHeader().setSeq(0);
+  }
+
+  /**
+   * CAM's E Stop 
+   * @param callback
+   */
+  public void setEmergencyStopCallback(ServiceResponseBuilder<iiwa_msgs.EmergencyStopRequest, iiwa_msgs.EmergencyStopResponse> callback){
+    eStopCallback = callback;
   }
 
   /**
@@ -619,6 +632,11 @@ public class iiwaSubscriber extends AbstractNodeMain {
       }
     });
     
+    // Creating EmergencyStop service if a callback has been defined.
+    if (eStopCallback != null) {
+      eStopServer = node.newServiceServer(iiwaName + "/EmergencyStop", "iiwa_msgs/EmergencyStop", eStopCallback);
+    }
+
     // Creating getFrames service if a callback has been defined.
     if (getFramesCallback != null) {
       getFramesServer = node.newServiceServer(iiwaName + "/configuration/GetFrames", "iiwa_msgs/GetFrames", getFramesCallback);

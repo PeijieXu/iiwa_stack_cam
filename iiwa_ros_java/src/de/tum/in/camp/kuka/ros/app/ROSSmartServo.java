@@ -49,6 +49,8 @@ import iiwa_msgs.TimeToDestinationResponse;
 import iiwa_msgs.GetFramesRequest;
 import iiwa_msgs.GetFramesResponse;
 import iiwa_msgs.JointQuantity;
+import iiwa_msgs.EmergencyStopRequest;
+import iiwa_msgs.EmergencyStopResponse;
 
 import java.net.URISyntaxException;
 import java.util.List;
@@ -139,6 +141,26 @@ public class ROSSmartServo extends ROSBaseApplication {
 
     // Configure the callback for the SmartServo service inside the subscriber
     // class.
+
+
+    subscriber
+        .setEmergencyStopCallback(new ServiceResponseBuilder<iiwa_msgs.EmergencyStopRequest, iiwa_msgs.EmergencyStopResponse>() {
+          @Override
+          public void build(iiwa_msgs.EmergencyStopRequest req, iiwa_msgs.EmergencyStopResponse res) throws ServiceException {
+            controlModeLock.lock();
+            try {
+              getApplicationControl().halt();
+
+            } catch (Exception e) {
+              e.printStackTrace();
+              
+              return;
+            } finally {
+              controlModeLock.unlock();
+            }
+          }
+        });
+
 
     subscriber
         .setGetFramesCallback(new ServiceResponseBuilder<iiwa_msgs.GetFramesRequest, iiwa_msgs.GetFramesResponse>() {
