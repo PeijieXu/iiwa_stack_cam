@@ -51,6 +51,7 @@ import com.kuka.roboticsAPI.motionModel.SplineJP;
 import com.kuka.roboticsAPI.motionModel.SplineMotionJP;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.IMotionControlMode;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
+import com.kuka.roboticsAPI.motionModel.controlModeModel.JointImpedanceControlMode;
 import com.kuka.roboticsAPI.geometricModel.CartDOF;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
@@ -197,33 +198,54 @@ public class Motions {
     else if (jpVel > 1)
       jpVel = 1;
 
-    double stiffStrX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
-    double stiffStrY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
-    double stiffStrZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getZ();
+    double stiffX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
+    double stiffY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
+    double stiffZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getZ();
+    double dampX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getX();
+    double dampY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getY();
+    double dampZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getZ();
 
-    if (stiffStrX < 0.01)
-      stiffStrX = 2000.0;
-    else if (stiffStrX > 5000)
-      stiffStrX = 5000.0;
+    if (stiffX < 0.01)
+      stiffX = 2000.0;
+    else if (stiffX > 5000)
+      stiffX = 5000.0;
 
-    if (stiffStrY < 0.01)
-      stiffStrY = 2000.0;
-    else if (stiffStrY > 5000)
-      stiffStrY = 5000.0;
+    if (stiffY < 0.01)
+      stiffY = 2000.0;
+    else if (stiffY > 5000)
+      stiffY = 5000.0;
 
-    if (stiffStrZ < 0.01)
-      stiffStrZ = 2000.0;
-    else if (stiffStrZ > 5000)
-      stiffStrZ = 5000.0;
+    if (stiffZ < 0.01)
+      stiffZ = 2000.0;
+    else if (stiffZ > 5000)
+      stiffZ = 5000.0;
+
+    if (dampX < 0)
+      dampX = 0.7;
+    else if (dampX > 1)
+      dampX = 1.0;
+
+    if (dampY < 0)
+      dampY = 0.7;
+    else if (dampY > 1)
+      dampY = 1.0;
+
+    if (dampZ < 0)
+      dampZ = 0.7;
+    else if (dampZ > 1)
+      dampZ = 1.0;
 
     SplineJP splineJP = new SplineJP(path);
     Logger.info("get Joint Spline with size: " + idx + ", at speed: " + jpVel);
 
     try {
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
-      impedanceMode.parametrize(CartDOF.X).setStiffness(stiffStrX);
-      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiffStrY);
-      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiffStrZ);
+      impedanceMode.parametrize(CartDOF.X).setStiffness(stiffX);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiffY);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiffZ);
+      impedanceMode.parametrize(CartDOF.X).setDamping(dampX);
+      impedanceMode.parametrize(CartDOF.Y).setDamping(dampY);
+      impedanceMode.parametrize(CartDOF.Z).setDamping(dampZ);
 
 
       endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode)); 
