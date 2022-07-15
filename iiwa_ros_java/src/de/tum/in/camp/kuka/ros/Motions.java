@@ -253,7 +253,7 @@ public class Motions {
       controlMode = (IMotionControlMode)impedanceMode;
 
     }else{
-      JointImpedanceControlMode impedanceMode = new JointImpedanceControlMode();
+      JointImpedanceControlMode impedanceMode = new JointImpedanceControlMode(robot.getJointCount());
 
       double stiff0 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
       double stiff1 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
