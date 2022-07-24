@@ -52,6 +52,7 @@ import com.kuka.roboticsAPI.motionModel.SplineMotionJP;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.IMotionControlMode;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.CartesianImpedanceControlMode;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.JointImpedanceControlMode;
+import com.kuka.roboticsAPI.motionModel.controlModeModel.PositionControlMode;
 import com.kuka.roboticsAPI.geometricModel.CartDOF;
 
 import static com.kuka.roboticsAPI.motionModel.BasicMotions.ptp;
@@ -202,9 +203,11 @@ public class Motions {
     SplineJP splineJP = new SplineJP(path);
     Logger.info("get Joint Spline with size: " + idx + ", at speed: " + jpVel);
 
-    IMotionControlMode controlMode;
+    // 0: cartesian impedence, 1: joint impedence, other: position control 
+    int executeMode = splineMsg.getSegments().get(0).getPointAux().getRedundancy().getStatus();
 
-    if (splineMsg.getSegments().get(0).getPointAux().getRedundancy().getStatus() == 0) {
+
+    if (executeMode == 0) {
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
 
       double stiffX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
@@ -250,9 +253,14 @@ public class Motions {
       impedanceMode.parametrize(CartDOF.X).setDamping(dampX);
       impedanceMode.parametrize(CartDOF.Y).setDamping(dampY);
       impedanceMode.parametrize(CartDOF.Z).setDamping(dampZ);
-      controlMode = (IMotionControlMode)impedanceMode;
 
-    }else{
+      try {
+        endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode));
+      } catch (Exception e) {
+        System.out.println(e);
+      }
+
+    }else if(executeMode == 1){
       JointImpedanceControlMode impedanceMode = new JointImpedanceControlMode(robot.getJointCount());
 
       double stiff0 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
@@ -274,15 +282,21 @@ public class Motions {
       impedanceMode.setStiffness(stiff0, stiff1, stiff2, stiff3, stiff4, stiff5, stiff6);
       impedanceMode.setDamping(damping0, damping1, damping2, damping3, damping4, damping5, damping6);
 
-      controlMode = (IMotionControlMode)impedanceMode;
+      try {
+        endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode));
+      } catch (Exception e) {
+        System.out.println(e);
+      }
 
+    }else{
+      try {
+        endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(new PositionControlMode()));
+      } catch (Exception e) {
+        System.out.println(e);
+      }
     }
 
-    try {
-      endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(controlMode));
-    } catch (Exception e) {
-      System.out.println(e);
-    }
+    
 
     
 
