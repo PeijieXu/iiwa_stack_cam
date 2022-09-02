@@ -100,8 +100,7 @@ public class ROSSmartServo extends ROSBaseApplication {
       frameCnt++;
 
       com.kuka.roboticsAPI.deviceModel.JointPosition c_jointPos = robot
-          .getInverseKinematicFromFrameAndRedundancy(
-              childFrame);
+          .getInverseKinematicFromFrameAndRedundancy(childFrame);
       JointQuantity c_q = publisher.getMessageGenerator().buildMessage(JointQuantity._TYPE);
       Conversions.vectorToJointQuantity(c_jointPos.get(), c_q);
       res.getJointPosition().add(c_q);
@@ -465,6 +464,8 @@ public class ROSSmartServo extends ROSBaseApplication {
 
               motions.setEnpointFrame(endpointFrame);
               controlModeHandler.setEndpointFrame(endpointFrame);
+              publisher.setEndpointFrame(endpointFrame);
+              publisherThread.changeEndpointFrame(endpointFrame);
 
               // update motion
               if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN) {
@@ -714,11 +715,13 @@ public class ROSSmartServo extends ROSBaseApplication {
     }
   }
 
+  // action
   protected void movePointToPointJointPosition(JointPosition commandPosition) {
     activateMotionMode(CommandType.POINT_TO_POINT_JOINT_POSITION);
     motions.pointToPointJointPositionMotion(controlModeHandler.getControlMode(), commandPosition);
   }
 
+  // action
   protected void movePointToPointCartesian(PoseStamped commandPosition, RedundancyInformation redundancy) {
 
     activateMotionMode(CommandType.POINT_TO_POINT_CARTESIAN_POSE);
@@ -732,6 +735,7 @@ public class ROSSmartServo extends ROSBaseApplication {
     }
   }
 
+  // action
   protected void movePointToPointCartesianLin(PoseStamped commandPosition, RedundancyInformation redundancy) {
     activateMotionMode(CommandType.POINT_TO_POINT_CARTESIAN_POSE_LIN);
     commandPosition = subscriber.transformPose(commandPosition, robotBaseFrameID);
@@ -744,6 +748,7 @@ public class ROSSmartServo extends ROSBaseApplication {
     }
   }
 
+  // action
   protected void movePointToPointCartesianSpline(Spline spline) {
     activateMotionMode(CommandType.POINT_TO_POINT_CARTESIAN_SPLINE);
     boolean success = motions

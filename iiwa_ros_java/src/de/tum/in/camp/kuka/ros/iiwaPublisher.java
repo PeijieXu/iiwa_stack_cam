@@ -68,6 +68,8 @@ public class iiwaPublisher extends AbstractNodeMain {
 
   private LBR robot;
 
+  private ObjectFrame endpointFrame = null;
+
   // Object to easily build iiwa_msgs from the current robot state
   private MessageGenerator helper;
 
@@ -96,6 +98,7 @@ public class iiwaPublisher extends AbstractNodeMain {
   public iiwaPublisher(LBR robot, String robotName, TimeProvider timeProvider) {
     this.robot = robot;
     this.robotName = robotName;
+    this.endpointFrame = robot.getFlange();
     helper = new MessageGenerator(robotName, timeProvider);
 
     cp = helper.buildMessage(iiwa_msgs.CartesianPose._TYPE);
@@ -108,6 +111,15 @@ public class iiwaPublisher extends AbstractNodeMain {
     js = helper.buildMessage(sensor_msgs.JointState._TYPE);
     t = helper.buildMessage(std_msgs.Time._TYPE);
     // flangeButton = helper.buildMessage(std_msgs.Bool._TYPE); // MEDIAFLANGEIO
+  }
+
+  /**
+   * Set a new EndpointFrame
+   * 
+   * @param frame
+   */
+  public void setEndpointFrame(ObjectFrame frame){
+    this.endpointFrame = frame;
   }
 
   /**
@@ -185,7 +197,7 @@ public class iiwaPublisher extends AbstractNodeMain {
    * @throws InterruptedException
    */
   public void publishCurrentState() throws InterruptedException {
-    publishCurrentState(robot.getFlange() /* , null */);
+    publishCurrentState(endpointFrame /* , null */);
   }
 
   /**

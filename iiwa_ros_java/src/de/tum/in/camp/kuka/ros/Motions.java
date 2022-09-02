@@ -133,6 +133,7 @@ public class Motions {
     }
   }
 
+  // action
   public void pointToPointCartesianMotion(IMotionControlMode motion, PoseStamped commandPosition, RedundancyInformation redundancy) {
     if (commandPosition != null) {
       Frame destinationFrame = Conversions.rosPoseToKukaFrame(robot.getRootFrame(), commandPosition.getPose());
@@ -147,6 +148,7 @@ public class Motions {
     }
   }
 
+  // action
   public void pointToPointLinearCartesianMotion(IMotionControlMode mode, PoseStamped commandPosition, RedundancyInformation redundancy) {
     if (commandPosition != null) {
       Frame destinationFrame = Conversions.rosPoseToKukaFrame(robot.getRootFrame(), commandPosition.getPose());
@@ -370,6 +372,7 @@ public class Motions {
     return success;
   }
 
+  // action
   public void pointToPointJointPositionMotion(IMotionControlMode motion, iiwa_msgs.JointPosition commandPosition) {
     if (commandPosition != null) {
       Conversions.rosJointQuantityToKuka(commandPosition.getPosition(), jp);
