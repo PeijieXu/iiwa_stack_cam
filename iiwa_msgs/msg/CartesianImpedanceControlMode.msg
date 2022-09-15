@@ -9,8 +9,8 @@ CartesianQuantity cartesian_damping
 
 # The stiffness value for null space [Nm/rad]. 
 # Precondition: 0.0 <= value. 
-float64 nullspace_stiffness
+float64 nullspace_stiffness = 100.0
 
 # The damping parameter for null space [Nm*s/rad]. 
 # Precondition: value >= 0.3 and value <= 1.0. - A good damping value is 0.7. 
-float64 nullspace_damping
+float64 nullspace_damping = 0.7
