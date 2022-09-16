@@ -43,6 +43,7 @@ import iiwa_msgs.SetWorkpieceRequest;
 import iiwa_msgs.SetWorkpieceResponse;
 import iiwa_msgs.SetEndpointFrameRequest;
 import iiwa_msgs.SetEndpointFrameResponse;
+import iiwa_msgs.JointSpline;
 import iiwa_msgs.Spline;
 import iiwa_msgs.TimeToDestinationRequest;
 import iiwa_msgs.TimeToDestinationResponse;
@@ -782,7 +783,7 @@ public class ROSSmartServo extends ROSBaseApplication {
     motions.cartesianVelocityMotion(motion, commandVelocity, endpointFrame);
   }
 
-  protected void moveAlongJointSpline(Spline spline){
+  protected void moveAlongJointSpline(JointSpline spline){
 
     motions
         .pointToPointJointSplineMotion(controlModeHandler.getControlMode(), spline, subscriber);

@@ -32,6 +32,10 @@ import java.util.List;
 
 import iiwa_msgs.RedundancyInformation;
 import iiwa_msgs.SplineSegment;
+import iiwa_msgs.JointSplineSegment;
+import iiwa_msgs.JointSpline;
+import iiwa_msgs.ControlMode;
+import iiwa_msgs.DOF;
 import geometry_msgs.PoseStamped;
 
 import com.kuka.connectivity.motionModel.smartServo.SmartServo;
@@ -171,31 +175,25 @@ public class Motions {
    * @param subscriber
    * @return
    */
-  public boolean pointToPointJointSplineMotion(IMotionControlMode motion, iiwa_msgs.Spline splineMsg, iiwaSubscriber subscriber) {
+  public boolean pointToPointJointSplineMotion(IMotionControlMode motion, iiwa_msgs.JointSpline splineMsg, iiwaSubscriber subscriber) {
     if (splineMsg == null) { return false; }
 
     boolean success = true;
+    final int jointCount = robot.getJointCount();
 
     PTP[] path = new PTP[splineMsg.getSegments().size()];
     int idx = 0;
-    for (SplineSegment segment : splineMsg.getSegments()) {
-      JointPosition jointPosition = new JointPosition(
-        segment.getPoint().getPoseStamped().getPose().getPosition().getX(),
-        segment.getPoint().getPoseStamped().getPose().getPosition().getY(),
-        segment.getPoint().getPoseStamped().getPose().getPosition().getZ(),
-        segment.getPoint().getPoseStamped().getPose().getOrientation().getW(),
-        segment.getPoint().getPoseStamped().getPose().getOrientation().getX(),
-        segment.getPoint().getPoseStamped().getPose().getOrientation().getY(),
-        segment.getPoint().getPoseStamped().getPose().getOrientation().getZ()
-      );
+    for (JointSplineSegment segment : splineMsg.getSegments()) {
+        float[] jp = segment.getJointAngle();
+        if(jp.length != jointCount) return false;
+        JointPosition jointPosition = new JointPosition(
+          jp[0], jp[1], jp[2], jp[3], jp[4], jp[5], jp[6]
+        );
 
       path[idx++] = new PTP(jointPosition);
     }
 
-    String speedStr = splineMsg.getSegments().get(0).getPoint().getPoseStamped().getHeader().getFrameId();
-
-    double jpVel = speedStr.isEmpty() ? 0.1 : Double.parseDouble(speedStr);
-
+    double jpVel = splineMsg.getSpeed();
     if (jpVel < 0.01)
       jpVel = 0.1;
     else if (jpVel > 1)
@@ -205,89 +203,54 @@ public class Motions {
     SplineJP splineJP = new SplineJP(path);
     Logger.info("get Joint Spline with size: " + idx + ", at speed: " + jpVel);
 
-    // 0: cartesian impedence, 1: joint impedence, other: position control 
-    int executeMode = splineMsg.getSegments().get(0).getPointAux().getRedundancy().getStatus();
+    // 2: cartesian impedence, 1: joint impedence, 0: position control 
+    int executeMode = splineMsg.getMode();
+    
 
 
-    if (executeMode == 0) {
+    if (executeMode == ControlMode.CARTESIAN_IMPEDANCE) {
       CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
+      float[] stiff = splineMsg.getCartesianStiffness();
+      float[] damping = splineMsg.getCartesianDamping();
+      if(stiff.length != 3) return false;
+      if(damping.length != 3) return false;
 
-      double stiffX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
-      double stiffY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
-      double stiffZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getZ();
-      double dampX = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getX();
-      double dampY = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getY();
-      double dampZ = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getZ();
+      for (float v : stiff) v = (v > 0 && v <= 5000) ? v : 2000f;
+      for (float v : damping) v = (v > 0 && v <= 1) ? v : 0.7f;
 
-      if (stiffX < 0.01)
-        stiffX = 2000.0;
-      else if (stiffX > 5000)
-        stiffX = 5000.0;
-
-      if (stiffY < 0.01)
-        stiffY = 2000.0;
-      else if (stiffY > 5000)
-        stiffY = 5000.0;
-
-      if (stiffZ < 0.01)
-        stiffZ = 2000.0;
-      else if (stiffZ > 5000)
-        stiffZ = 5000.0;
-
-      if (dampX < 0)
-        dampX = 0.7;
-      else if (dampX > 1)
-        dampX = 1.0;
-
-      if (dampY < 0)
-        dampY = 0.7;
-      else if (dampY > 1)
-        dampY = 1.0;
-
-      if (dampZ < 0)
-        dampZ = 0.7;
-      else if (dampZ > 1)
-        dampZ = 1.0;
-
-      impedanceMode.parametrize(CartDOF.X).setStiffness(stiffX);
-      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiffY);
-      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiffZ);
-      impedanceMode.parametrize(CartDOF.X).setDamping(dampX);
-      impedanceMode.parametrize(CartDOF.Y).setDamping(dampY);
-      impedanceMode.parametrize(CartDOF.Z).setDamping(dampZ);
+      impedanceMode.parametrize(CartDOF.X).setStiffness(stiff[0]);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiff[1]);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiff[2]);
+      impedanceMode.parametrize(CartDOF.X).setDamping(damping[0]);
+      impedanceMode.parametrize(CartDOF.Y).setDamping(damping[1]);
+      impedanceMode.parametrize(CartDOF.Z).setDamping(damping[2]);
 
       try {
         endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode));
       } catch (Exception e) {
         System.out.println(e);
+        success = false;
       }
 
-    }else if(executeMode == 1){
-      JointImpedanceControlMode impedanceMode = new JointImpedanceControlMode(robot.getJointCount());
+    }else if(executeMode == ControlMode.JOINT_IMPEDANCE){
+      JointImpedanceControlMode impedanceMode = new JointImpedanceControlMode(jointCount);
 
-      double stiff0 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getX();
-      double stiff1 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getY();
-      double stiff2 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getPosition().getZ();
-      double stiff3 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getW();
-      double stiff4 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getX();
-      double stiff5 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getY();
-      double stiff6 = splineMsg.getSegments().get(0).getPointAux().getPoseStamped().getPose().getOrientation().getZ();
+      float[] stiff = splineMsg.getJointStiffness();
+      float[] damping = splineMsg.getJointDamping();
+      if(stiff.length != jointCount) return false;
+      if(damping.length != jointCount) return false;
 
-      double damping0 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getPosition().getX();
-      double damping1 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getPosition().getY();
-      double damping2 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getPosition().getZ();
-      double damping3 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getOrientation().getW();
-      double damping4 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getOrientation().getX();
-      double damping5 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getOrientation().getY();
-      double damping6 = splineMsg.getSegments().get(1).getPointAux().getPoseStamped().getPose().getOrientation().getZ();
+      for (float v : stiff) v = (v > 0 && v <= 5000) ? v : 2000f;
+      for (float v : damping) v = (v > 0 && v <= 1) ? v : 0.7f;
 
-      impedanceMode.setStiffness(stiff0, stiff1, stiff2, stiff3, stiff4, stiff5, stiff6);
-      impedanceMode.setDamping(damping0, damping1, damping2, damping3, damping4, damping5, damping6);
+      impedanceMode.setStiffness(stiff[0], stiff[1], stiff[2], stiff[3], stiff[4], stiff[5], stiff[6]);
+      impedanceMode.setDamping(damping[0], damping[1], damping[2], damping[3], damping[4], damping[5], damping[6]);
 
       try {
         endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(impedanceMode));
       } catch (Exception e) {
         System.out.println(e);
+        success = false;
       }
 
     }else{
@@ -295,12 +258,9 @@ public class Motions {
         endPointFrame.moveAsync(splineJP.setJointVelocityRel(jpVel).setMode(new PositionControlMode()));
       } catch (Exception e) {
         System.out.println(e);
+        success = false;
       }
     }
-
-    
-
-    
 
     return success;
 
