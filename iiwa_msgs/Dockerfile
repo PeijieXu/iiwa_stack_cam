@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-c"]
 # upgrade ros packages
 RUN apt-get update && \
     apt-get install --only-upgrade ros-noetic-* -y && \
-    apt-get install python-wstool -y
+    apt-get install python3-wstool -y
 
 # setup catkin_ws for java 6 message generation  
 RUN mkdir -p /catkin_ws
