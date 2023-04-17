@@ -1,12 +1,12 @@
 # add by peijie, https://github.com/IFL-CAMP/iiwa_stack/pull/255/files
-FROM ros:noetic-ros-base
+FROM ros:kinetic-ros-base
 
 # use bash to be able to source the ros files
 SHELL ["/bin/bash", "-c"]
 
 # upgrade ros packages
 RUN apt-get update && \
-    apt-get install --only-upgrade ros-noetic-* -y && \
+    apt-get install --only-upgrade ros-kinetic-* -y && \
     apt-get install python3-wstool -y
 
 # setup catkin_ws for java 6 message generation  
@@ -14,7 +14,7 @@ RUN mkdir -p /catkin_ws
 WORKDIR /catkin_ws
 RUN source /ros_entrypoint.sh && \
     wstool init src && \
-    wstool set -y -t src genjava --git https://github.com/Tuebel/genjava.git --version=noetic_java6 && \
+    wstool set -y -t src genjava --git https://github.com/Tuebel/genjava.git --version=kinetic_java6 && \
     wstool update -t src && \
     rosdep install --from-paths src --ignore-src -r -y && \
     catkin_make

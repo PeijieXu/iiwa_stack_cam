@@ -1,3 +1,3 @@
 Header header
-string robotName
+# string robotName
 JointQuantity position
