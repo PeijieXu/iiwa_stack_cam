@@ -40,4 +40,23 @@ public class CommandTypes {
     POINT_TO_POINT_CARTESIAN_SPLINE,
     POINT_TO_POINT_JOINT_POSITION 
   }
+
+  static public boolean isPointToPoint(CommandType commandType) {
+    return commandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE
+        || commandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE_LIN
+        || commandType == CommandType.POINT_TO_POINT_CARTESIAN_SPLINE
+        || commandType == CommandType.POINT_TO_POINT_JOINT_POSITION;
+  }
+
+  static public boolean isSmartServo(CommandType commandType) {
+    return commandType == CommandType.SMART_SERVO_CARTESIAN_POSE
+        || commandType == CommandType.SMART_SERVO_CARTESIAN_VELOCITY
+        || commandType == CommandType.SMART_SERVO_JOINT_POSITION
+        || commandType == CommandType.SMART_SERVO_JOINT_POSITION_VELOCITY
+        || commandType == CommandType.SMART_SERVO_JOINT_VELOCITY;
+  }
+
+  static public boolean isSmartServoLin(CommandType commandType) {
+    return commandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN;
+  }
 }

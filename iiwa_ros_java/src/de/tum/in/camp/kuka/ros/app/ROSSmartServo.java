@@ -70,6 +70,7 @@ import com.kuka.roboticsAPI.motionModel.controlModeModel.PositionControlMode;
 import com.kuka.roboticsAPI.deviceModel.LBR;
 
 import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
+import de.tum.in.camp.kuka.ros.CommandTypes;
 import de.tum.in.camp.kuka.ros.Conversions;
 import de.tum.in.camp.kuka.ros.Logger;
 import de.tum.in.camp.kuka.ros.Motions;
@@ -633,44 +634,29 @@ public class ROSSmartServo extends ROSBaseApplication {
 
     Logger.debug("Switching control mode from " + lastCommandType + " to " + commandType);
 
-    if (commandType == CommandType.SMART_SERVO_CARTESIAN_POSE
-        || commandType == CommandType.SMART_SERVO_CARTESIAN_VELOCITY
-        || commandType == CommandType.SMART_SERVO_JOINT_POSITION
-        || commandType == CommandType.SMART_SERVO_JOINT_POSITION_VELOCITY
-        || commandType == CommandType.SMART_SERVO_JOINT_VELOCITY) {
+    if (CommandTypes.isSmartServo(commandType)) {
       if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN || lastCommandType == null) {
         motion = controlModeHandler.switchToSmartServo(linearMotion);
       }
-      else if (lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE
-          || lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE_LIN
-          || lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_SPLINE
-          || lastCommandType == CommandType.POINT_TO_POINT_JOINT_POSITION) {
+      else if (CommandTypes.isPointToPoint(lastCommandType)) {
         motion = controlModeHandler.enableSmartServo(motion);
       }
+
     }
-    else if (commandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN) {
-      if (lastCommandType != CommandType.SMART_SERVO_CARTESIAN_POSE_LIN || lastCommandType == null) {
+    else if (CommandTypes.isSmartServoLin(commandType)) {
+      if (!CommandTypes.isSmartServoLin(lastCommandType) || lastCommandType == null) {
         linearMotion = controlModeHandler.switchToSmartServoLIN(motion);
       }
-      else if (lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE
-          || lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE_LIN
-          || lastCommandType == CommandType.POINT_TO_POINT_CARTESIAN_SPLINE
-          || lastCommandType == CommandType.POINT_TO_POINT_JOINT_POSITION) {
+      else if (CommandTypes.isPointToPoint(lastCommandType)) {
         linearMotion = controlModeHandler.enableSmartServo(linearMotion);
       }
+
     }
-    else if (commandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE
-        || commandType == CommandType.POINT_TO_POINT_CARTESIAN_POSE_LIN
-        || commandType == CommandType.POINT_TO_POINT_CARTESIAN_SPLINE
-        || commandType == CommandType.POINT_TO_POINT_JOINT_POSITION) {
-      if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE
-          || lastCommandType == CommandType.SMART_SERVO_JOINT_POSITION
-          || lastCommandType == CommandType.SMART_SERVO_JOINT_POSITION_VELOCITY
-          || lastCommandType == CommandType.SMART_SERVO_JOINT_VELOCITY
-          || lastCommandType == CommandType.SMART_SERVO_CARTESIAN_VELOCITY) {
+    else if (CommandTypes.isPointToPoint(commandType)) {
+      if (CommandTypes.isSmartServo(lastCommandType)) {
         controlModeHandler.disableSmartServo(motion);
       }
-      else if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN) {
+      else if (CommandTypes.isSmartServoLin(lastCommandType)) {
         controlModeHandler.disableSmartServo(linearMotion);
       }
       else if (lastCommandType == null) {

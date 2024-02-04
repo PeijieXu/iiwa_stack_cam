@@ -1,8 +1,8 @@
 /**
  * Copyright (C) 2016 Salvatore Virga - salvo.virga@tum.de, Marco Esposito - marco.esposito@tum.de
- * Technische Universität München
+ * Technische Universitï¿½t Mï¿½nchen
  * Chair for Computer Aided Medical Procedures and Augmented Reality
- * Fakultät für Informatik / I16, Boltzmannstraße 3, 85748 Garching bei München, Germany
+ * Fakultï¿½t fï¿½r Informatik / I16, Boltzmannstraï¿½e 3, 85748 Garching bei Mï¿½nchen, Germany
  * http://campar.in.tum.de
  * All rights reserved.
  * 
@@ -63,6 +63,7 @@ import com.kuka.roboticsAPI.uiModel.userKeys.UserKeyEvent;
 import de.tum.in.camp.kuka.ros.ActionServerThread;
 import de.tum.in.camp.kuka.ros.ActiveToolThread;
 import de.tum.in.camp.kuka.ros.AddressGenerator;
+import de.tum.in.camp.kuka.ros.CommandTypes;
 import de.tum.in.camp.kuka.ros.CommandTypes.CommandType;
 import de.tum.in.camp.kuka.ros.Logger.Level;
 import de.tum.in.camp.kuka.ros.ControlModeHandler;
