@@ -470,15 +470,11 @@ public class ROSSmartServo extends ROSBaseApplication {
               publisherThread.changeEndpointFrame(endpointFrame);
 
               // update motion
-              if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE_LIN) {
+              if (CommandTypes.isSmartServoLin(lastCommandType)) {
                 activateMotionMode(CommandType.SMART_SERVO_JOINT_POSITION);
                 activateMotionMode(CommandType.SMART_SERVO_CARTESIAN_POSE_LIN);
               }
-              else if (lastCommandType == CommandType.SMART_SERVO_CARTESIAN_POSE
-                  || lastCommandType == CommandType.SMART_SERVO_CARTESIAN_VELOCITY
-                  || lastCommandType == CommandType.SMART_SERVO_JOINT_POSITION
-                  || lastCommandType == CommandType.SMART_SERVO_JOINT_POSITION_VELOCITY
-                  || lastCommandType == CommandType.SMART_SERVO_JOINT_VELOCITY) {
+              else if (CommandTypes.isSmartServo(lastCommandType)) {
                 activateMotionMode(CommandType.SMART_SERVO_JOINT_POSITION);
                 CommandType currentCommandType = lastCommandType;
                 activateMotionMode(CommandType.SMART_SERVO_CARTESIAN_POSE_LIN);
@@ -565,7 +561,9 @@ public class ROSSmartServo extends ROSBaseApplication {
         if (subscriber.commandJointSpline){
           subscriber.commandJointSpline = false;
           moveAlongJointSpline(subscriber.getJointSpline());
-          
+        } else if (subscriber.commandCartesianSpline){
+          subscriber.commandCartesianSpline = false;
+          moveAlongCartesianSpline(subscriber.getCartesianSpline());
         } else {
           switch (copy) {
             case SMART_SERVO_CARTESIAN_POSE: {
@@ -770,10 +768,11 @@ public class ROSSmartServo extends ROSBaseApplication {
   }
 
   protected void moveAlongJointSpline(JointSpline spline){
+    motions.pointToPointJointSplineMotion(spline);
+  }
 
-    motions
-        .pointToPointJointSplineMotion(controlModeHandler.getControlMode(), spline, subscriber);
-
+  protected void moveAlongCartesianSpline(Spline spline){
+    motions.pointToPointCartesianSplineMotion(spline, subscriber);
   }
 
 }

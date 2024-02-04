@@ -175,7 +175,7 @@ public class Motions {
    * @param subscriber
    * @return
    */
-  public boolean pointToPointJointSplineMotion(IMotionControlMode motion, iiwa_msgs.JointSpline splineMsg, iiwaSubscriber subscriber) {
+  public boolean pointToPointJointSplineMotion(iiwa_msgs.JointSpline splineMsg) {
     if (splineMsg == null) { return false; }
 
     boolean success = true;
@@ -264,6 +264,90 @@ public class Motions {
 
     return success;
 
+  }
+
+  /**
+   * Executes a motion along a spline
+   * 
+   * @param splineMsg
+   * @param subscriber: Required for TF lookups
+   */
+  public boolean pointToPointCartesianSplineMotion(iiwa_msgs.Spline splineMsg, iiwaSubscriber subscriber) {
+    if (splineMsg == null) { return false; }
+
+    boolean success = true;
+    List<SplineMotionCP<?>> splineSegments = new ArrayList<SplineMotionCP<?>>();
+    int i = 0;
+
+    for (SplineSegment segmentMsg : splineMsg.getSegments()) {
+      SplineMotionCP<?> segment = null;
+      switch (segmentMsg.getType()) {
+        case SplineSegment.SPL: {
+          Frame p = subscriber.cartesianPoseToRosFrame(robot.getRootFrame(), segmentMsg.getPoint(), robotBaseFrameId);
+          if (p != null) {
+            segment = spl(p);
+          }
+          break;
+        }
+        case SplineSegment.LIN: {
+          Frame p = subscriber.cartesianPoseToRosFrame(robot.getRootFrame(), segmentMsg.getPoint(), robotBaseFrameId);
+          if (p != null) {
+            segment = lin(p);
+          }
+          break;
+        }
+        case SplineSegment.CIRC: {
+          Frame p = subscriber.cartesianPoseToRosFrame(robot.getRootFrame(), segmentMsg.getPoint(), robotBaseFrameId);
+          Frame pAux = subscriber.cartesianPoseToRosFrame(robot.getRootFrame(), segmentMsg.getPointAux(), robotBaseFrameId);
+          if (p != null && pAux != null) {
+            segment = circ(p, pAux);
+          }
+          break;
+        }
+        default: {
+          Logger.error("Unknown spline segment type: " + segmentMsg.getType());
+          break;
+        }
+      }
+
+      if (segment != null) {
+        splineSegments.add(segment);
+      }
+      else {
+        Logger.warn("Invalid spline segment: " + i);
+        success = false;
+      }
+
+      i++;
+    }
+
+    if (success) {
+      Logger.debug("Executing spline with " + splineSegments.size() + " segments");
+      Spline spline = new Spline(splineSegments.toArray(new SplineMotionCP<?>[splineSegments.size()]));
+      SpeedLimits.applySpeedLimits(spline);
+
+      CartesianImpedanceControlMode impedanceMode = new CartesianImpedanceControlMode();
+      // float[] stiff = splineMsg.getCartesianStiffness();
+      // float[] damping = splineMsg.getCartesianDamping();
+      float[] stiff = {2000f, 2000f, 2000f};
+      float[] damping = {0.7f, 0.7f, 0.7f};
+      if(stiff.length != 3) return false;
+      if(damping.length != 3) return false;
+
+      for (float v : stiff) v = (v > 0 && v <= 5000) ? v : 2000f;
+      for (float v : damping) v = (v > 0 && v <= 1) ? v : 0.7f;
+
+      impedanceMode.parametrize(CartDOF.X).setStiffness(stiff[0]);
+      impedanceMode.parametrize(CartDOF.Y).setStiffness(stiff[1]);
+      impedanceMode.parametrize(CartDOF.Z).setStiffness(stiff[2]);
+      impedanceMode.parametrize(CartDOF.X).setDamping(damping[0]);
+      impedanceMode.parametrize(CartDOF.Y).setDamping(damping[1]);
+      impedanceMode.parametrize(CartDOF.Z).setDamping(damping[2]);
+
+      endPointFrame.moveAsync(spline.setMode(impedanceMode));
+    }
+
+    return success;
   }
 
   /**

@@ -124,6 +124,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
   private Subscriber<iiwa_msgs.JointPositionVelocity> jointPositionVelocitySubscriber;
   private Subscriber<iiwa_msgs.JointVelocity> jointVelocitySubscriber;
   private Subscriber<iiwa_msgs.JointSpline> jointSplineSubscriber;
+  private Subscriber<iiwa_msgs.Spline> cartesianSplineSubscriber;
 
   private TransformListener tfListener;
 
@@ -138,18 +139,23 @@ public class iiwaSubscriber extends AbstractNodeMain {
   private iiwa_msgs.JointPositionVelocity jpv;
   private iiwa_msgs.JointVelocity jv;
   private iiwa_msgs.JointSpline splineMsg;
+  private iiwa_msgs.Spline cartesianSplineMsg;
 
-  private Boolean new_jp = new Boolean("false");
-  private Boolean new_cp = new Boolean("false");
-  private Boolean new_cp_lin = new Boolean("false");
-  private Boolean new_jpv = new Boolean("false");
-  private Boolean new_jointSpline = new Boolean("false");
+  private Boolean new_jp = false;
+  private Boolean new_cp = false;
+  private Boolean new_cp_lin = false;
+  private Boolean new_jpv = false;
+  private Boolean new_jointSpline = false;
+  private Boolean new_cartesianSpline = false;
 
   // Current control strategy
   public CommandType currentCommandType = null;
 
   // joint spline received
   public Boolean commandJointSpline = false;
+
+  // cartesian spline received
+  public Boolean commandCartesianSpline = false;
 
   // Current action type
   public CommandType currentActionType = null;
@@ -198,6 +204,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jpv = helper.buildMessage(iiwa_msgs.JointPositionVelocity._TYPE);
     jv = helper.buildMessage(iiwa_msgs.JointVelocity._TYPE);
     splineMsg = helper.buildMessage(iiwa_msgs.JointSpline._TYPE);
+    cartesianSplineMsg = helper.buildMessage(iiwa_msgs.Spline._TYPE);
   }
 
   /**
@@ -210,7 +217,6 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jp.getHeader().setSeq(0);
     jpv.getHeader().setSeq(0);
     jv.getHeader().setSeq(0);
-    // splineMsg.getHeader().setSeq(0);
   }
 
   /**
@@ -367,6 +373,16 @@ public class iiwaSubscriber extends AbstractNodeMain {
     }
   }
 
+  public iiwa_msgs.Spline getCartesianSpline() {
+    synchronized (new_cartesianSpline) {
+      if(new_cartesianSpline){
+        new_cartesianSpline = false;
+        return cartesianSplineMsg;
+      }
+      return null;
+    }
+  }
+
   /**
    * Returns the last received Joint Position-Velocity message. Returns null if no new message is available.
    * <p>
@@ -518,6 +534,7 @@ public class iiwaSubscriber extends AbstractNodeMain {
     jointPositionVelocitySubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointPositionVelocity", iiwa_msgs.JointPositionVelocity._TYPE, hint);
     jointVelocitySubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointVelocity", iiwa_msgs.JointVelocity._TYPE, hint);
     jointSplineSubscriber = connectedNode.newSubscriber(iiwaName + "/command/JointSpline", iiwa_msgs.JointSpline._TYPE, hint);
+    cartesianSplineSubscriber = connectedNode.newSubscriber(iiwaName + "/command/CartesianSpline", iiwa_msgs.Spline._TYPE, hint);
     tfListener = new TransformListener(connectedNode);
 
     // Subscribers' callbacks
@@ -629,6 +646,21 @@ public class iiwaSubscriber extends AbstractNodeMain {
           commandJointSpline = true;
           currentCommandType = CommandType.SMART_SERVO_JOINT_POSITION;
           new_jointSpline = true;
+        }
+      }
+    });
+
+    cartesianSplineSubscriber.addMessageListener(new MessageListener<iiwa_msgs.Spline>() {
+      @Override
+      public void onNewMessage(iiwa_msgs.Spline spline) {
+ 
+        cartesianSplineMsg = spline;
+
+        synchronized (new_cartesianSpline) {
+          commandCartesianSpline = true;
+          // TODO
+          currentCommandType = CommandType.SMART_SERVO_JOINT_POSITION;
+          new_cartesianSpline = true;
         }
       }
     });
